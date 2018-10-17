@@ -1,3 +1,5 @@
-# EmergingTechProject
+# Emerging Technologies Project
 
-** Ryan Conway
+Project Repository for 4th Year module "Emerging Technologies".
+
+##### Ryan Conway
