@@ -1,83 +1,86 @@
-from __future__ import print_function
-import keras
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Activation
-from keras.layers import Conv2D, MaxPooling2D
-from keras import backend as K
-from keras.layers.normalization import BatchNormalization
+# import keras packages
+# NOTE: To import the keras package you must install tensorflow - which can be found here: https://www.tensorflow.org/install/
+import keras as kr
 
-batch_size = 128
-num_classes = 10
-epochs = 10
+# Create the sequential model
+model = kr.models.Sequential()
 
-# input image dimensions
-img_rows, img_cols = 28, 28
+# Add layers to the model
+model.add(kr.layers.Dense(units=1000, activation='linear', input_dim=784))
+#model.add(kr.layers.Dense(units=400, activation='relu'))
+model.add(kr.layers.Dense(units=10, activation='softmax'))
 
-# the data, shuffled and split between train and test sets
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+# Compile the model
+model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
 
-if K.image_data_format() == 'channels_first':
-    x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-    input_shape = (1, img_rows, img_cols)
+# Import the gzip and numpy packages
+import gzip
+import numpy as np
+
+# This opens the images file which is located in our local directory and assigns the read in value to a variable
+with gzip.open('t10k-images-idx3-ubyte.gz', 'rb') as f:
+    image_content = f.read()
+    
+# This opens the label file which is located in our local directory and assigns the read in value to a variable
+with gzip.open('t10k-labels-idx1-ubyte.gz', 'rb') as f:
+    label_content = f.read()
+    
+# This opens the training images file which is located in our local directory and assigns the read in value to a variable
+with gzip.open('train-images-idx3-ubyte.gz', 'rb') as f:
+    train_img = f.read()
+
+# This opens the training label file which is located in our local directory and assigns the read in value to a variable
+with gzip.open('train-labels-idx1-ubyte.gz', 'rb') as f:
+    train_lbl = f.read()
+    
+# Assign the training data set to a numpy array holding all the values in a 28x28 array
+train_img = ~np.array(list(train_img[16:])).reshape(60000, 28, 28).astype(np.uint8) / 255.0
+# Assign the training label data set to a numpy array
+train_lbl =  np.array(list(train_lbl[8:])).astype(np.uint8)
+
+# Assign the data set to a numpy array holding all the values in a 28x28 array
+image_test = ~np.array(list(image_content[16:])).reshape(10000, 28, 28).astype(np.uint8) / 255.0
+
+# Assign the label data set to a numpy array
+label_test =  np.array(list(label_content[8:])).astype(np.uint8)
+
+# Reshape the 3D array into a 1D array
+inputs = train_img.reshape(60000, 784)
+test_inputs = image_test.reshape(10000, 784)
+
+# For encoding categorical variables.
+import sklearn.preprocessing as pre
+
+# set up the binary encoder
+encoder = pre.LabelBinarizer()
+# fit the labels into the binary format
+encoder.fit(train_lbl)
+# Transform the labels to the binary format
+outputs = encoder.transform(train_lbl)
+
+# Train the model and assign it to a variable so we can use it to plot our data
+model.fit(inputs, outputs, epochs=20, batch_size=100, verbose=1)
+
+def test_rand():
+    from random import randint
+    for i in range(10):
+        print("Test Number : ", i+1,"\n")
+        #Generate a random number between 0-9999 to get a random index
+        x = randint(0, 9999)
+        print("The random index: ", x, "\n")
+        print("The result array: ")
+        test = model.predict(test_inputs[x:x+1])
+        # Print the result array
+        print(test, "\n")
+        # Get the maximum value from the machine predictions
+        pred_result = test.argmax(axis=1)
+
+        print("The networks prediction: =>> ",  pred_result)
+        print("The actual number: =>> ", label_test[x:x+1])
+        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+
+menu_options = input("Please Select a menu option: 1 - Test 10 random images from the test set")
+if menu_options == '1':
+    test_rand()
 else:
-    x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-    input_shape = (img_rows, img_cols, 1)
-
-x_train = x_train.astype('float32')
-x_test = x_test.astype('float32')
-x_train /= 255
-x_test /= 255
-print('x_train shape:', x_train.shape)
-print(x_train.shape[0], 'train samples')
-print(x_test.shape[0], 'test samples')
-
-# convert class vectors to binary class matrices
-y_train = keras.utils.to_categorical(y_train, num_classes)
-y_test = keras.utils.to_categorical(y_test, num_classes)
-
-model = Sequential()
-
-model.add(Conv2D(32, (3, 3), input_shape=(28,28,1)))
-model.add(Activation('relu'))
-BatchNormalization(axis=-1)
-model.add(Conv2D(32, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2,2)))
-
-BatchNormalization(axis=-1)
-model.add(Conv2D(64,(3, 3)))
-model.add(Activation('relu'))
-BatchNormalization(axis=-1)
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2,2)))
-
-model.add(Flatten())
-# Fully connected layer
-
-BatchNormalization()
-model.add(Dense(512))
-model.add(Activation('relu'))
-BatchNormalization()
-model.add(Dropout(0.2))
-model.add(Dense(10))
-
-model.add(Activation('softmax'))
-
-model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adam(),
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=2,
-          validation_data=(x_test, y_test))
-score = model.evaluate(x_test, y_test, verbose=1)
-
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
-model.save('mnist_keras_cnn_model.h5')
+    exit()
