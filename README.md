@@ -62,9 +62,21 @@ The default home page should be at the address http://localhost:8888/tree. Perso
 If you decide to use the /lab layout then it will look like this. You can open a notebook by clicking on any of the files on the left ending with .ipynb, which will open the notebook in a tab on the right.
 <img src="Images/lab.PNG">          <img src="Images/lab_notebook.PNG">
 
+### Running the notebooks
+
 Most of the notebook is written in both Markdown and Python. To run the python scripts, navigate to the script you want to run and click the "Play" button, this should run the script. If the script has ran sucessfully then a number should appear to the left of the script in square brackets []. The number here indicated the ammount of times a piece of code has been run in the notebook. If a number doesnt appear and it displays a star [* ] then this can mean that the program is still running or it may have stalled. If the run fails then an error exception will be output to the user.
 
 When running the notebook, its advised to run each program in succession from the first to the last, unless told otherwise.
+
+### Running the python file
+
+To run the python file "Digit-Recog.py" there is a line of code at the bottom of the "DigitRecognitionNotebook" that can be ran through the notebook to run this python script.
+
+If you would prefer to run the script through the command line, you can navigate to the directory where this file is stored (..\EmergingTechProject\Digit-Recognition) and run the following command
+
+    python Digit-Recog.py
+    
+If there are any problems when running any of the above code please let me know
 
 ## Resources and References
 
@@ -77,4 +89,5 @@ When running the notebook, its advised to run each program in succession from th
 </ul>
    <a href=""></a>
 
-##### Ryan Conway
+##### Author: Ryan Conway
+##### Python version used: Python 3.6.7 :: Anaconda, Inc. 
